@@ -2,23 +2,27 @@ package app
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/Wh4tisl0ve/Cloud_file_storage_go/config"
+	"github.com/Wh4tisl0ve/Cloud_file_storage_go/pkg/logger"
 	"github.com/Wh4tisl0ve/Cloud_file_storage_go/pkg/postgres"
 )
 
 func Run(cfg *config.Config) {
-	// DB config
+	// logger setup
+	envConfig := cfg.Env
+	logger := logger.SetupLogger(envConfig)
+
+	// DB setup
 	dbConfig := cfg.Database
 
 	dsn := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", dbConfig.Username, dbConfig.Password, dbConfig.Host, dbConfig.Port, dbConfig.Name)
 
 	postgres, err := postgres.New(dsn)
 	if err != nil {
-		log.Fatal(err.Error())
+		logger.Error(err.Error())
 	} else {
-		log.Print("✅ Connected to PostgreSQL successfully!")
+		logger.Info("✅ Connected to PostgreSQL successfully!")
 	}
 	defer postgres.Close()
 }

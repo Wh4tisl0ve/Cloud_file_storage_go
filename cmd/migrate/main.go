@@ -13,13 +13,17 @@ import (
 )
 
 func main() {
-	cfg := config.MustLoad()
+	cfg, err := config.MustLoad()
+	if err != nil {
+		log.Fatal("Failed load config")
+	}
+
 	dbConfig := cfg.Database
 
 	dsn := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", dbConfig.Username, dbConfig.Password, dbConfig.Host, dbConfig.Port, dbConfig.Name)
 	m, err := migrate.New("file://migrations", dsn)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Failed create migrate instance")
 	}
 	defer m.Close()
 

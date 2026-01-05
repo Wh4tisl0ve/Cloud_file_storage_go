@@ -1,7 +1,7 @@
 package config
 
 import (
-	"log"
+	"fmt"
 
 	"github.com/caarlos0/env/v11"
 	"github.com/joho/godotenv"
@@ -26,15 +26,15 @@ type Database struct {
 	Name     string `env:"DATABASE_NAME" required:"true"`
 }
 
-func MustLoad() *Config {
+func MustLoad() (*Config, error) {
 	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file")
+		return nil, fmt.Errorf("Error loading .env file: %s", err.Error())
 	}
 
 	var cfg Config
 	if err := env.Parse(&cfg); err != nil {
-		log.Fatal("Error parse config struct")
+		return nil, fmt.Errorf("Error parse config struct: %s", err.Error())
 	}
 
-	return &cfg
+	return &cfg, nil
 }
