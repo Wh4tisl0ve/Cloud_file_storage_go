@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Wh4tisl0ve/Cloud_file_storage_go/config"
+	// "github.com/Wh4tisl0ve/Cloud_file_storage_go/internal/repository"
 	"github.com/Wh4tisl0ve/Cloud_file_storage_go/pkg/logger"
 	"github.com/Wh4tisl0ve/Cloud_file_storage_go/pkg/postgres"
 )
@@ -25,4 +26,7 @@ func Run(cfg *config.Config) {
 		logger.Info("✅ Connected to PostgreSQL successfully!")
 	}
 	defer postgres.Close()
+
+	// repositories
+	// userRepo := repository.New(postgres)
 }
