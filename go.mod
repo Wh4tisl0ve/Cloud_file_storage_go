@@ -4,7 +4,13 @@ go 1.25.0
 
 require github.com/caarlos0/env v3.5.0+incompatible
 
-require github.com/lib/pq v1.10.9 // indirect
+require (
+	github.com/ajg/form v1.5.1 // indirect
+	github.com/go-chi/chi v1.5.5 // indirect
+	github.com/go-chi/chi/v5 v5.2.3 // indirect
+	github.com/go-chi/render v1.0.3 // indirect
+	github.com/lib/pq v1.10.9 // indirect
+)
 
 require (
 	github.com/caarlos0/env/v11 v11.3.1 // indirect

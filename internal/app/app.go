@@ -2,8 +2,12 @@ package app
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/Wh4tisl0ve/Cloud_file_storage_go/config"
+	"github.com/go-chi/chi"
+	"github.com/go-chi/render"
+
 	// "github.com/Wh4tisl0ve/Cloud_file_storage_go/internal/repository"
 	"github.com/Wh4tisl0ve/Cloud_file_storage_go/pkg/logger"
 	"github.com/Wh4tisl0ve/Cloud_file_storage_go/pkg/postgres"
@@ -29,4 +33,45 @@ func Run(cfg *config.Config) {
 
 	// repositories
 	// userRepo := repository.New(postgres)
+
+	// routing and server
+	// todo move to other folder
+	r := chi.NewRouter()
+
+	// middlewares
+	r.Use(render.SetContentType(render.ContentTypeJSON))
+
+	// routes
+	r.Route("/api", func(r chi.Router) {
+		// public routes
+		r.Group(func(r chi.Router) {
+			r.Get("/auth/sign-up",
+				func(w http.ResponseWriter, r *http.Request) {
+					w.Write([]byte("sign-up!"))
+				})
+			r.Get("/auth/sign-in",
+				func(w http.ResponseWriter, r *http.Request) {
+					w.Write([]byte("sign-in!"))
+				})
+		})
+		// Private Routes
+		// Require Authentication
+		// r.Group(func(r chi.Router) {
+		// 	r.Use(AuthMiddleware)
+		// 	r.Post("/manage", CreateAsset)
+		// })
+	})
+
+	// custom handlers
+	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(404)
+		w.Write([]byte("route does not exist"))
+	})
+	r.MethodNotAllowed(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(405)
+		w.Write([]byte("method is not valid"))
+	})
+
+	// todo .env config
+	http.ListenAndServe("localhost:8000", r)
 }
