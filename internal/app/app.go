@@ -5,6 +5,9 @@ import (
 	"net/http"
 
 	"github.com/Wh4tisl0ve/Cloud_file_storage_go/config"
+	handlers "github.com/Wh4tisl0ve/Cloud_file_storage_go/internal/controller/http/handlers/user"
+	"github.com/Wh4tisl0ve/Cloud_file_storage_go/internal/repository"
+	usecase "github.com/Wh4tisl0ve/Cloud_file_storage_go/internal/usecase/user"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
 
@@ -32,7 +35,10 @@ func Run(cfg *config.Config) {
 	defer postgres.Close()
 
 	// repositories
-	// userRepo := repository.New(postgres)
+	userRepo := repository.New(postgres)
+
+	// use-case
+	createUserUC := usecase.NewCreateUserUseCase(userRepo)
 
 	// routing and server
 	// todo move to other folder
@@ -45,14 +51,7 @@ func Run(cfg *config.Config) {
 	r.Route("/api", func(r chi.Router) {
 		// public routes
 		r.Group(func(r chi.Router) {
-			r.Get("/auth/sign-up",
-				func(w http.ResponseWriter, r *http.Request) {
-					w.Write([]byte("sign-up!"))
-				})
-			r.Get("/auth/sign-in",
-				func(w http.ResponseWriter, r *http.Request) {
-					w.Write([]byte("sign-in!"))
-				})
+			r.Post("/auth/sign-up", handlers.NewSignUpHandler(createUserUC))
 		})
 		// Private Routes
 		// Require Authentication
@@ -64,12 +63,17 @@ func Run(cfg *config.Config) {
 
 	// custom handlers
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(404)
-		w.Write([]byte("route does not exist"))
+		render.Status(r, http.StatusNotFound)
+		render.JSON(w, r, map[string]string{
+			"error": "route not found",
+		})
 	})
+
 	r.MethodNotAllowed(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(405)
-		w.Write([]byte("method is not valid"))
+		render.Status(r, http.StatusMethodNotAllowed)
+		render.JSON(w, r, map[string]string{
+			"error": "method not allowed",
+		})
 	})
 
 	// todo .env config
