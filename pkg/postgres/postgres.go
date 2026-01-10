@@ -2,7 +2,7 @@ package postgres
 
 import (
 	"database/sql"
-	
+
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
@@ -11,7 +11,7 @@ type Postgres struct {
 	Conn *sql.DB
 }
 
-func New(dsn string) (*Postgres, error){
+func New(dsn string) (*Postgres, error) {
 	conn, err := sql.Open("pgx", dsn)
 	if err != nil {
 		return nil, err
@@ -21,14 +21,14 @@ func New(dsn string) (*Postgres, error){
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &Postgres{
-		dsn: dsn,
+		dsn:  dsn,
 		Conn: conn,
 	}, nil
 }
 
-func (p *Postgres) Close() error{
+func (p *Postgres) Close() error {
 	err := p.Conn.Close()
 
 	if err != nil {

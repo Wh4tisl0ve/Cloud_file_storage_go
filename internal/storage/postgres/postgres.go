@@ -1,4 +1,4 @@
-package repository
+package storage
 
 import (
 	"database/sql"
@@ -12,7 +12,7 @@ type UserRepository struct {
 	*postgres.Postgres
 }
 
-func New(pg *postgres.Postgres) *UserRepository {
+func NewUserRepository(pg *postgres.Postgres) *UserRepository {
 	return &UserRepository{
 		pg,
 	}

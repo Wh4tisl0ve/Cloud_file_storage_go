@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/Wh4tisl0ve/Cloud_file_storage_go/config"
+	"github.com/Wh4tisl0ve/Cloud_file_storage_go/internal/config"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"

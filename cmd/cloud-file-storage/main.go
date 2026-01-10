@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"github.com/Wh4tisl0ve/Cloud_file_storage_go/config"
 	"github.com/Wh4tisl0ve/Cloud_file_storage_go/internal/app"
+	"github.com/Wh4tisl0ve/Cloud_file_storage_go/internal/config"
 )
 
 func main() {

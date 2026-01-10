@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/Wh4tisl0ve/Cloud_file_storage_go/config"
-	handlers "github.com/Wh4tisl0ve/Cloud_file_storage_go/internal/controller/http/handlers/user"
-	"github.com/Wh4tisl0ve/Cloud_file_storage_go/internal/repository"
-	usecase "github.com/Wh4tisl0ve/Cloud_file_storage_go/internal/usecase/user"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
 
-	// "github.com/Wh4tisl0ve/Cloud_file_storage_go/internal/repository"
+	"github.com/Wh4tisl0ve/Cloud_file_storage_go/internal/config"
+	controller "github.com/Wh4tisl0ve/Cloud_file_storage_go/internal/controller/http/user"
+	"github.com/Wh4tisl0ve/Cloud_file_storage_go/internal/service"
+	storage "github.com/Wh4tisl0ve/Cloud_file_storage_go/internal/storage/postgres"
+	"github.com/Wh4tisl0ve/Cloud_file_storage_go/internal/usecase"
 	"github.com/Wh4tisl0ve/Cloud_file_storage_go/pkg/logger"
 	"github.com/Wh4tisl0ve/Cloud_file_storage_go/pkg/postgres"
 )
@@ -35,10 +35,13 @@ func Run(cfg *config.Config) {
 	defer postgres.Close()
 
 	// repositories
-	userRepo := repository.New(postgres)
+	userRepo := storage.NewUserRepository(postgres)
 
-	// use-case
-	createUserUC := usecase.NewCreateUserUseCase(userRepo)
+	// services
+	hasher := service.NewBcryptHasherService()
+
+	// use-cases
+	createUserUC := usecase.NewCreateUserUseCase(userRepo, hasher)
 
 	// routing and server
 	// todo move to other folder
@@ -51,14 +54,8 @@ func Run(cfg *config.Config) {
 	r.Route("/api", func(r chi.Router) {
 		// public routes
 		r.Group(func(r chi.Router) {
-			r.Post("/auth/sign-up", handlers.NewSignUpHandler(createUserUC))
+			r.Post("/auth/sign-up", controller.NewSignUpHandler(createUserUC))
 		})
-		// Private Routes
-		// Require Authentication
-		// r.Group(func(r chi.Router) {
-		// 	r.Use(AuthMiddleware)
-		// 	r.Post("/manage", CreateAsset)
-		// })
 	})
 
 	// custom handlers
@@ -76,6 +73,12 @@ func Run(cfg *config.Config) {
 		})
 	})
 
-	// todo .env config
-	http.ListenAndServe("localhost:8000", r)
+	srvCfg := cfg.HttpServer
+
+	addr := fmt.Sprintf("%s:%d", srvCfg.Host, srvCfg.Port)
+	srv := &http.Server{Addr: addr, Handler: r}
+
+	if err := srv.ListenAndServe(); err != nil {
+		logger.Error(err.Error())
+	}
 }
