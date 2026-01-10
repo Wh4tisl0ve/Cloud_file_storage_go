@@ -54,7 +54,7 @@ func Run(cfg *config.Config) {
 	r.Route("/api", func(r chi.Router) {
 		// public routes
 		r.Group(func(r chi.Router) {
-			r.Post("/auth/sign-up", controller.NewSignUpHandler(createUserUC))
+			r.Post("/auth/sign-up", controller.NewSignUpHandler(&createUserUC))
 		})
 	})
 

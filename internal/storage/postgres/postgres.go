@@ -18,7 +18,7 @@ func NewUserRepository(pg *postgres.Postgres) *UserRepository {
 	}
 }
 
-func (repo *UserRepository) CreateUser(u *entity.User) error {
+func (repo *UserRepository) Save(u *entity.User) error {
 	_, err := repo.Conn.Exec(
 		"INSERT INTO users(username, password) VALUES ($1, $2)",
 		u.Username, u.Password,

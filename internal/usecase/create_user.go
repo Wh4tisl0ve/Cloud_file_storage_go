@@ -7,7 +7,7 @@ import (
 )
 
 type UserRepository interface {
-	CreateUser(*entity.User) error
+	Save(*entity.User) error
 	FindByUsername(string) (entity.User, error)
 }
 
@@ -28,12 +28,26 @@ func NewCreateUserUseCase(repo UserRepository, hasher PasswordHasher) CreateUser
 	}
 }
 
-func (uc CreateUserUseCase) Execute(username, password string) error {
-	hashPassword, err := uc.ph.Hash(password)
-	if err != nil {
+func (uc *CreateUserUseCase) Execute(username, password string) error {
+	if username == "" || len(username) < 4 || len(username) > 50 {
+		return fmt.Errorf("Логин должен содержать от 4 до 50 символов")
 	}
 
-	fmt.Println(hashPassword)
+	if password == "" || len(password) < 8 || len(password) > 20 {
+		return fmt.Errorf("Пароль должен содержать от 4 до 20 символов")
+	}
+
+	hashPassword, err := uc.ph.Hash(password)
+	if err != nil {
+		return fmt.Errorf("Ошибка при хешировании пароля: %s", err.Error())
+	}
+
+	u := entity.User{Username: username, Password: hashPassword}
+
+	if err = uc.r.Save(&u); err != nil {
+		// todo проверка на unique constraint username
+		return fmt.Errorf("Ошибка при создании пользователя: %s", err.Error())
+	}
 
 	return nil
 }

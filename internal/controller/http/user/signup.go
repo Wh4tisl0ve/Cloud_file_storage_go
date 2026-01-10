@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/go-chi/render"
@@ -9,8 +10,8 @@ import (
 )
 
 type CreateUserRequest struct {
-	UserName string `json:"username" validate:"required,min=4,max=50"`
-	Password string `json:"password" validate:"required,min=8"`
+	UserName string `json:"username" validate:"required"`
+	Password string `json:"password" validate:"required"`
 }
 
 type CreateUserResponse struct {
@@ -22,7 +23,7 @@ type CreateUserUseCase interface {
 	Execute(username, password string) error
 }
 
-func NewSignUpHandler(us CreateUserUseCase) http.HandlerFunc {
+func NewSignUpHandler(uc CreateUserUseCase) http.HandlerFunc {
 	// todo upgrade error message
 	// todo add response struct
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -46,9 +47,10 @@ func NewSignUpHandler(us CreateUserUseCase) http.HandlerFunc {
 			return
 		}
 
-		err := us.Execute(req.UserName, req.Password)
+		err := uc.Execute(req.UserName, req.Password)
 		if err != nil {
 			// todo что-то
+			fmt.Println(err.Error())
 		}
 
 		render.Status(r, http.StatusCreated)
