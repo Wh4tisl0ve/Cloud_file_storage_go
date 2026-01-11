@@ -30,16 +30,16 @@ func (repo *UserRepository) Save(u *entity.User) error {
 	return nil
 }
 
-func (repo *UserRepository) FindByUsername(userName string) (entity.User, error) {
+func (repo *UserRepository) FindByUsername(userName string) (*entity.User, error) {
 	var u entity.User
 
-	row := repo.Conn.QueryRow("SELECT * FROM users WHERE username = $1", userName)
+	row := repo.Conn.QueryRow("SELECT id, username, password, created_at FROM users WHERE username = $1", userName)
 	if err := row.Scan(&u.Id, &u.Username, &u.Password, &u.CreatedAt); err != nil {
 		if err == sql.ErrNoRows {
-			return u, fmt.Errorf("Нет записей с username = %s", userName)
+			return nil, fmt.Errorf("Нет записей с username = %s", userName)
 		}
-		return u, fmt.Errorf("Ошибка извлечения данных: %s", err)
+		return nil, fmt.Errorf("Ошибка извлечения данных: %s", err)
 	}
 
-	return u, nil
+	return &u, nil
 }

@@ -41,7 +41,8 @@ func Run(cfg *config.Config) {
 	hasher := service.NewBcryptHasherService()
 
 	// use-cases
-	createUserUC := usecase.NewCreateUserUseCase(userRepo, hasher)
+	registerUserUC := usecase.NewRegisterUser(userRepo, hasher)
+	authorizeUserUC := usecase.NewAuthorizeUser(userRepo, hasher)
 
 	// routing and server
 	// todo move to other folder
@@ -54,7 +55,10 @@ func Run(cfg *config.Config) {
 	r.Route("/api", func(r chi.Router) {
 		// public routes
 		r.Group(func(r chi.Router) {
-			r.Post("/auth/sign-up", controller.NewSignUpHandler(&createUserUC))
+			r.Post("/auth/sign-up", controller.NewSignUpHandler(registerUserUC))
+		})
+		r.Group(func(r chi.Router) {
+			r.Post("/auth/sign-in", controller.NewSignInHandler(authorizeUserUC))
 		})
 	})
 
