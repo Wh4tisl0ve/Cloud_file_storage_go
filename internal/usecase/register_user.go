@@ -1,13 +1,14 @@
 package usecase
 
 import (
+	"errors"
 	"fmt"
 
-	"github.com/Wh4tisl0ve/Cloud_file_storage_go/internal/entity"
+	"github.com/Wh4tisl0ve/Cloud_file_storage_go/internal/domain"
 )
 
 type UserSaver interface {
-	Save(*entity.User) error
+	Save(*domain.User) error
 }
 
 type PasswordHasher interface {
@@ -28,23 +29,28 @@ func NewRegisterUser(us UserSaver, hasher PasswordHasher) *RegisterUser {
 
 func (uc *RegisterUser) Execute(username, password string) error {
 	if username == "" || len(username) < 4 || len(username) > 50 {
-		return fmt.Errorf("Логин должен содержать от 4 до 50 символов")
+		return domain.ErrInvalidUsername
 	}
 
 	if password == "" || len(password) < 8 || len(password) > 20 {
-		return fmt.Errorf("Пароль должен содержать от 8 до 20 символов")
+		return domain.ErrInvalidPassword
 	}
 
-	hashPassword, err := uc.ph.Hash(password)
+	hashedPassword, err := uc.ph.Hash(password)
 	if err != nil {
-		return fmt.Errorf("Ошибка при хешировании пароля: %s", err.Error())
+		return fmt.Errorf("failed to hash password: %w", err)
 	}
 
-	u := entity.User{Username: username, Password: hashPassword}
+	u := domain.User{
+		Username: username,
+		Password: hashedPassword,
+	}
 
 	if err = uc.us.Save(&u); err != nil {
-		// todo проверка на unique constraint username
-		return fmt.Errorf("Ошибка при создании пользователя: %s", err.Error())
+		if errors.Is(err, domain.ErrUserAlreadyExists) {
+			return domain.ErrUserAlreadyExists
+		}
+		return fmt.Errorf("failed to create user: %w", err)
 	}
 
 	return nil

@@ -2,7 +2,6 @@ package controller
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/go-chi/render"
@@ -46,8 +45,10 @@ func NewSignInHandler(uс AuthorizeUserUseCase) http.HandlerFunc {
 
 		err := uс.Execute(req.Username, req.Password)
 		if err != nil {
-			// todo что-то
-			fmt.Println(err.Error())
+			render.Status(r, http.StatusUnauthorized)
+			render.JSON(w, r, map[string]string{
+				"error": "failed authorization",
+			})
 
 			return
 		}

@@ -2,10 +2,12 @@ package storage
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
-	"github.com/Wh4tisl0ve/Cloud_file_storage_go/internal/entity"
+	"github.com/Wh4tisl0ve/Cloud_file_storage_go/internal/domain"
 	"github.com/Wh4tisl0ve/Cloud_file_storage_go/pkg/postgres"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type UserRepository struct {
@@ -13,32 +15,39 @@ type UserRepository struct {
 }
 
 func NewUserRepository(pg *postgres.Postgres) *UserRepository {
-	return &UserRepository{
-		pg,
-	}
+	return &UserRepository{pg}
 }
 
-func (repo *UserRepository) Save(u *entity.User) error {
+func (repo *UserRepository) Save(u *domain.User) error {
 	_, err := repo.Conn.Exec(
 		"INSERT INTO users(username, password) VALUES ($1, $2)",
-		u.Username, u.Password,
+		u.Username,
+		u.Password,
 	)
 	if err != nil {
-		return fmt.Errorf("Ошибка добавления новой записи: %s", err.Error())
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return domain.ErrUserAlreadyExists
+		}
+		return fmt.Errorf("failed to insert user record: %w", err)
 	}
 
 	return nil
 }
 
-func (repo *UserRepository) FindByUsername(userName string) (*entity.User, error) {
-	var u entity.User
+func (repo *UserRepository) FindByUsername(username string) (*domain.User, error) {
+	var u domain.User
 
-	row := repo.Conn.QueryRow("SELECT id, username, password, created_at FROM users WHERE username = $1", userName)
+	row := repo.Conn.QueryRow(
+		"SELECT id, username, password, created_at FROM users WHERE username = $1",
+		username,
+	)
+
 	if err := row.Scan(&u.Id, &u.Username, &u.Password, &u.CreatedAt); err != nil {
-		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("Нет записей с username = %s", userName)
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrUserNotFound
 		}
-		return nil, fmt.Errorf("Ошибка извлечения данных: %s", err)
+		return nil, fmt.Errorf("failed to fetch user data: %w", err)
 	}
 
 	return &u, nil

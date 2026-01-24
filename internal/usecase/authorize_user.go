@@ -3,11 +3,11 @@ package usecase
 import (
 	"fmt"
 
-	"github.com/Wh4tisl0ve/Cloud_file_storage_go/internal/entity"
+	"github.com/Wh4tisl0ve/Cloud_file_storage_go/internal/domain"
 )
 
 type UserFinder interface {
-	FindByUsername(username string) (*entity.User, error)
+	FindByUsername(username string) (*domain.User, error)
 }
 
 type PasswordComparer interface {
@@ -33,11 +33,11 @@ func (uc *AuthorizeUser) Execute(username, password string) error {
 	}
 
 	if u == nil {
-		return fmt.Errorf("User not found")
+		return domain.ErrUserNotFound
 	}
 
 	if !uc.pc.Compare(password, u.Password) {
-		return fmt.Errorf("Failed to authorize")
+		return domain.ErrInvalidPassword
 	}
 
 	return nil
