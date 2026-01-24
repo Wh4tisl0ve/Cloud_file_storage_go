@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/render"
 
 	"github.com/Wh4tisl0ve/Cloud_file_storage_go/internal/config"
@@ -47,8 +48,8 @@ func Run(cfg *config.Config) {
 	// routing and server
 	// todo move to other folder
 	r := chi.NewRouter()
-
 	// middlewares
+	r.Use(middleware.Logger)
 	r.Use(render.SetContentType(render.ContentTypeJSON))
 
 	// routes
